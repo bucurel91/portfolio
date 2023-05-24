@@ -1,0 +1,25 @@
+node {
+    def WORKSPACE = /var/lib/jenkins/workspace/portfolio-deploy
+    def dockerImageTag = "portfolio-deploy${env.BUILD_NUMBER}"
+
+    try{
+        stage('Clone Repo') {
+        git url : 'https://github.com/bucurel91/portfolio.git'
+            credentialsId : 'deploy_portfolio'
+            branch : 'main'
+        }
+
+        stage('Build docker') {
+            dockerImage : docker.build("portfolio-deploy:${env.BUILD_NUMBERB}")
+        }
+
+        stage('Deploy docker') {
+            echo "Docker Image Tag Name: ${dockerImageTag}"
+            sh "docker stop portfolio-deploy || true && docker rm portfolio-deploy || true"
+            sh "docker run --name portfolio-deploy -d -p 8081:8080 portfolio-deploy:${env.BUILD_NUMBER}"
+
+        }
+    }catch(e) {
+        throw e
+    }
+}
